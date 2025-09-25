@@ -1,4 +1,4 @@
-"""Add tables: users, roles, refresh_tokens, user_roles
+"""Create tables: users, roles, refresh_tokens, user_roles
 
 Revision ID: 7b55a660e0b0
 Revises: b5df4cac4c5c
