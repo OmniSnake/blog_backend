@@ -7,10 +7,8 @@ Create Date: 2025-09-25 18:03:08.574004
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 
-# revision identifiers, used by Alembic.
 revision = '7b55a660e0b0'
 down_revision = 'b5df4cac4c5c'
 branch_labels = None
@@ -25,7 +23,7 @@ def upgrade() -> None:
         sa.Column('permissions', sa.Text(), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=func.now(), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), onupdate=func.now(), nullable=True),
-        sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=True),
+        sa.Column('is_active', sa.Boolean(), default=True),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_roles_id'), 'roles', ['id'], unique=False)
@@ -37,10 +35,10 @@ def upgrade() -> None:
         sa.Column('password_hash', sa.String(length=255), nullable=False),
         sa.Column('first_name', sa.String(length=100), nullable=True),
         sa.Column('last_name', sa.String(length=100), nullable=True),
-        sa.Column('is_verified', sa.Boolean(), server_default=sa.text('false'), nullable=True),
+        sa.Column('is_verified', sa.Boolean(), default=False),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=func.now(), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), onupdate=func.now(), nullable=True),
-        sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=True),
+        sa.Column('is_active', sa.Boolean(), default=True),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
@@ -61,7 +59,7 @@ def upgrade() -> None:
         sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=func.now(), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), onupdate=func.now(), nullable=True),
-        sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=True),
+        sa.Column('is_active', sa.Boolean(), default=True),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
         sa.PrimaryKeyConstraint('id')
     )

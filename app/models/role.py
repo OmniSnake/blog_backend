@@ -1,33 +1,26 @@
-from sqlalchemy import Column, String, Text, Table, ForeignKey
-from sqlalchemy.orm import relationship
-from typing import List, TYPE_CHECKING
-from .base import Base
-
-if TYPE_CHECKING:
-    from .user import User
+from sqlalchemy import String, Text, Table, ForeignKey, Column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List
+from .base import BaseModel
 
 user_role_association = Table(
     'user_roles',
-    Base.metadata,
+    BaseModel.metadata,
     Column('user_id', ForeignKey('users.id'), primary_key=True),
     Column('role_id', ForeignKey('roles.id'), primary_key=True)
 )
 
 
-class Role(Base):
+class Role(BaseModel):
     """Модель роли пользователя"""
 
     __tablename__ = "roles"
 
-    name: str = Column(String(50), unique=True, index=True, nullable=False)
-    description: str = Column(Text, nullable=True)
-    permissions: str = Column(Text, nullable=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
+    permissions: Mapped[str] = mapped_column(Text, nullable=True)
 
-    users: List['User'] = relationship(
-        'User',
-        secondary=user_role_association,
-        back_populates='roles'
-    )
+    users: Mapped[List["User"]] = relationship("User",secondary=user_role_association,back_populates="roles")
 
     def __repr__(self) -> str:
         return f"<Role {self.name}>"
@@ -54,7 +47,7 @@ class RolePermissions:
     ADMIN_UPDATE = "admin:update"
 
     @classmethod
-    def get_role_permissions(cls, role_name: str) -> list[str]:
+    def get_role_permissions(cls, role_name: str) -> List[str]:
         """Получить разрешения для роли"""
         role_permissions_map = {
             "user": [cls.POST_READ, cls.CATEGORY_READ],

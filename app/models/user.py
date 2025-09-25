@@ -1,30 +1,29 @@
-from sqlalchemy import Column, String, Boolean
-from sqlalchemy.orm import relationship
-from typing import List, TYPE_CHECKING
-from .base import Base
-from .refresh_token import RefreshToken
-
-if TYPE_CHECKING:
-    from .role import Role
+from sqlalchemy import String, Boolean, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List
+from .base import BaseModel
 
 
-class User(Base):
+class User(BaseModel):
     """Модель пользователя"""
 
     __tablename__ = "users"
 
-    email: str = Column(String(255), unique=True, index=True, nullable=False)
-    password_hash: str = Column(String(255), nullable=False)
-    first_name: str = Column(String(100), nullable=True)
-    last_name: str = Column(String(100), nullable=True)
-    is_verified: bool = Column(Boolean, default=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+    first_name: Mapped[str] = mapped_column(String(100), nullable=True)
+    last_name: Mapped[str] = mapped_column(String(100), nullable=True)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    roles: List['Role'] = relationship(
-        'Role',
-        secondary='user_roles',
-        back_populates='users'
+    roles: Mapped[List["Role"]] = relationship(
+        "Role",
+        secondary="user_roles",
+        back_populates="users"
     )
-    refresh_tokens: List['RefreshToken'] = relationship('RefreshToken', back_populates='user')
+    refresh_tokens: Mapped[List["RefreshToken"]] = relationship(
+        "RefreshToken",
+        back_populates="user"
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.email}>"
