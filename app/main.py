@@ -2,14 +2,19 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.api.v1.router import api_router
 from app.core.database import db_manager
+from sqlalchemy import text
 
 async def startup():
     """Действия при запуске приложения"""
     print("🚀 Blog Backend API starting up...")
     try:
         async with db_manager.engine.connect() as conn:
-            await conn.execute("SELECT 1")
-        print("✅ Database connection established")
+            result = await conn.execute(text("SELECT 1"))
+            row = result.fetchone()
+            if row and row[0] == 1:
+                print("✅ Database connection established")
+            else:
+                print("❌ Database connection test failed")
     except Exception as e:
         print(f"❌ Database connection error: {e}")
 
