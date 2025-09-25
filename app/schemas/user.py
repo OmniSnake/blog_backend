@@ -39,10 +39,22 @@ class UserResponse(UserBase):
         from_attributes = True
 
 
-
 class UserWithRolesResponse(UserResponse):
     """Схема ответа пользователя с ролями"""
     roles: Optional[List[str]] = None
+
+
+class UserRoleUpdate(BaseModel):
+    """Схема для обновления ролей пользователя"""
+    roles: List[str]
+
+
+class UserListResponse(BaseModel):
+    """Схема для списка пользователей"""
+    users: list[UserWithRolesResponse]
+    total: int
+    skip: int
+    limit: int
 
 
 class LoginRequest(BaseModel):
