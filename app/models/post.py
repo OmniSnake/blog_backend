@@ -1,5 +1,6 @@
 from sqlalchemy import String, Text, Boolean, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+import bleach
 from .base import BaseModel
 
 
@@ -23,3 +24,23 @@ class Post(BaseModel):
 
     def __repr__(self) -> str:
         return f"<Post {self.title}>"
+
+    def __init__(self, **kwargs):
+        """Инициализация с автоматической санитизацией HTML"""
+        if 'content' in kwargs:
+            kwargs['content_html'] = self.sanitize_html(kwargs['content'])
+        super().__init__(**kwargs)
+
+    @staticmethod
+    def sanitize_html(content: str) -> str:
+        """Санитизация HTML контента"""
+        allowed_tags = ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'code',
+                        'pre']
+        allowed_attributes = {'a': ['href', 'title'], 'img': ['alt']}
+
+        return bleach.clean(
+            content,
+            tags=allowed_tags,
+            attributes=allowed_attributes,
+            strip=True
+        )
