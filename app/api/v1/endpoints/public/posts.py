@@ -14,8 +14,8 @@ async def get_posts(
         db: AsyncSession = Depends(get_db)
 ):
     """Получение списка опубликованных постов (публичный доступ)"""
-    post_repo = PostRepository(db)
-    posts = await post_repo.get_published_posts(skip=skip, limit=limit)
+    post_repository = PostRepository(db)
+    posts = await post_repository.get_published_posts(skip=skip, limit=limit)
 
     return PostListResponse(
         posts=posts,
@@ -31,8 +31,8 @@ async def get_post_by_slug(
         db: AsyncSession = Depends(get_db)
 ):
     """Получение поста по slug (публичный доступ)"""
-    post_repo = PostRepository(db)
-    post = await post_repo.get_by_slug(slug)
+    post_repository = PostRepository(db)
+    post = await post_repository.get_by_slug(slug)
 
     if not post or not post.is_published or not post.is_active:
         raise HTTPException(

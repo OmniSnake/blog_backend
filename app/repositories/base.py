@@ -107,6 +107,11 @@ class PostRepositoryInterface(BaseRepository[ModelType], ABC):
         """Создать пост с автором"""
         pass
 
+    @abstractmethod
+    async def exists_by_category_id(self, category_id: int) -> bool:
+        """Проверить существование постов в категории"""
+        pass
+
 
 class RefreshTokenRepositoryInterface(BaseRepository[ModelType], ABC):
     """Абстрактный репозиторий для refresh токенов"""

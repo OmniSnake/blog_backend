@@ -89,6 +89,23 @@ class PostRepository(PostRepositoryInterface[Post]):
             logger.error(f"Error getting posts by category {category_slug}: {error}")
             return []
 
+    async def exists_by_category_id(self, category_id: int) -> bool:
+        """Проверить существование постов в категории (чистая операция с данными)"""
+        try:
+            from sqlalchemy import select, exists
+
+            stmt = select(
+                exists().where(
+                    self.model.category_id == category_id,
+                    self.model.is_active == True
+                )
+            )
+            result = await self._db_session.execute(stmt)
+            return result.scalar()
+        except SQLAlchemyError as error:
+            logger.error(f"Error checking posts existence for category {category_id}: {error}")
+            return False
+
     async def create(self, **kwargs) -> Optional[Post]:
         """Создать пост"""
         try:

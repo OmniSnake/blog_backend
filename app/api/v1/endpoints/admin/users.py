@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
-from app.api.dependencies import require_admin
+from app.api.dependencies import require_admin, get_user_service, get_user_repository
 from app.schemas.user import UserWithRolesResponse, UserRoleUpdate, UserListResponse
 from app.services.user_service import UserService
-from typing import List
+from app.repositories.user_repository import UserRepository
 
 router = APIRouter()
 
@@ -14,15 +12,15 @@ async def get_users(
         skip: int = Query(0, ge=0),
         limit: int = Query(100, ge=1, le=1000),
         current_user: dict = Depends(require_admin),
-        db: AsyncSession = Depends(get_db)
+        user_service: UserService = Depends(get_user_service),
+        user_repository: UserRepository = Depends(get_user_repository)
 ):
     """Получение списка пользователей (только для администраторов)"""
-    user_service = UserService(db)
-    users = await user_service.user_repo.get_all(skip=skip, limit=limit)
+    users = await user_repository.get_all(skip=skip, limit=limit)
 
     users_with_roles = []
     for user in users:
-        roles = await user_service.user_repo.get_user_roles(user.id)
+        roles = await user_service.get_user_roles(user.id)
         users_with_roles.append(
             UserWithRolesResponse(
                 id=user.id,
@@ -50,10 +48,10 @@ async def update_user_roles(
         user_id: int,
         roles_data: UserRoleUpdate,
         current_user: dict = Depends(require_admin),
-        db: AsyncSession = Depends(get_db)
+        user_service: UserService = Depends(get_user_service),
+        user_repository: UserRepository = Depends(get_user_repository)
 ):
     """Обновление ролей пользователя (только для администраторов)"""
-    user_service = UserService(db)
     success, error = await user_service.update_user_roles(user_id, roles_data)
 
     if not success:
@@ -62,8 +60,8 @@ async def update_user_roles(
             detail=error
         )
 
-    user = await user_service.user_repo.get_by_id(user_id)
-    updated_roles = await user_service.user_repo.get_user_roles(user_id)
+    user = await user_repository.get_by_id(user_id)
+    updated_roles = await user_service.get_user_roles(user_id)
 
     return UserWithRolesResponse(
         id=user.id,
@@ -82,10 +80,9 @@ async def update_user_roles(
 async def deactivate_user(
         user_id: int,
         current_user: dict = Depends(require_admin),
-        db: AsyncSession = Depends(get_db)
+        user_service: UserService = Depends(get_user_service)
 ):
     """Деактивация пользователя (только для администраторов)"""
-    user_service = UserService(db)
     success, error = await user_service.deactivate_user(user_id)
 
     if not success:

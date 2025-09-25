@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
-from app.api.dependencies import require_admin
+from app.api.dependencies import require_admin, get_post_service, get_post_repository
 from app.schemas.post import PostCreate, PostUpdate, PostResponse, PostListResponse
-from app.services.post import PostService
+from app.services.post_service import PostService
+from app.repositories.post_repository import PostRepository
 
 router = APIRouter()
 
@@ -12,10 +11,10 @@ router = APIRouter()
 async def create_post(
         post_data: PostCreate,
         current_user: dict = Depends(require_admin),
-        db: AsyncSession = Depends(get_db)
+        post_service: PostService = Depends(get_post_service),
+        post_repository: PostRepository = Depends(get_post_repository)
 ):
     """Создание нового поста (только для администраторов)"""
-    post_service = PostService(db)
     success, error = await post_service.create_post(current_user["id"], post_data)
 
     if not success:
@@ -24,7 +23,7 @@ async def create_post(
             detail=error
         )
 
-    post = await post_service.post_repo.get_by_slug(post_data.slug)
+    post = await post_repository.get_by_slug(post_data.slug)
     return post
 
 
@@ -33,11 +32,10 @@ async def get_posts(
         skip: int = Query(0, ge=0),
         limit: int = Query(100, ge=1, le=1000),
         current_user: dict = Depends(require_admin),
-        db: AsyncSession = Depends(get_db)
+        post_repository: PostRepository = Depends(get_post_repository)
 ):
     """Получение списка постов (только для администраторов)"""
-    post_service = PostService(db)
-    posts = await post_service.post_repo.get_all(skip=skip, limit=limit)
+    posts = await post_repository.get_all(skip=skip, limit=limit)
     total = len(posts)
 
     return PostListResponse(
@@ -52,11 +50,10 @@ async def get_posts(
 async def get_post(
         post_id: int,
         current_user: dict = Depends(require_admin),
-        db: AsyncSession = Depends(get_db)
+        post_repository: PostRepository = Depends(get_post_repository)
 ):
     """Получение поста по ID (только для администраторов)"""
-    post_service = PostService(db)
-    post = await post_service.post_repo.get_by_id(post_id)
+    post = await post_repository.get_by_id(post_id)
 
     if not post:
         raise HTTPException(
@@ -72,10 +69,10 @@ async def update_post(
         post_id: int,
         post_data: PostUpdate,
         current_user: dict = Depends(require_admin),
-        db: AsyncSession = Depends(get_db)
+        post_service: PostService = Depends(get_post_service),
+        post_repository: PostRepository = Depends(get_post_repository)
 ):
     """Обновление поста (только для администраторов)"""
-    post_service = PostService(db)
     success, error = await post_service.update_post(post_id, post_data)
 
     if not success:
@@ -84,7 +81,7 @@ async def update_post(
             detail=error
         )
 
-    post = await post_service.post_repo.get_by_id(post_id)
+    post = await post_repository.get_by_id(post_id)
     return post
 
 
@@ -92,10 +89,9 @@ async def update_post(
 async def delete_post(
         post_id: int,
         current_user: dict = Depends(require_admin),
-        db: AsyncSession = Depends(get_db)
+        post_service: PostService = Depends(get_post_service)
 ):
     """Удаление поста (только для администраторов)"""
-    post_service = PostService(db)
     success, error = await post_service.delete_post(post_id)
 
     if not success:

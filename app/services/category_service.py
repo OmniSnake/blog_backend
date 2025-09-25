@@ -26,11 +26,9 @@ class CategoryService:
     async def create_category(self, category_data: CategoryCreate) -> Tuple[bool, Optional[str]]:
         """Создание категории (бизнес-логика)"""
         try:
-            # Бизнес-правило: проверка уникальности slug
             if await self._category_repository.slug_exists(category_data.slug):
                 return False, "Category with this slug already exists"
 
-            # Создание категории (делегирование репозиторию)
             category = await self._category_repository.create(**category_data.model_dump())
             if not category:
                 return False, "Failed to create category"
@@ -46,13 +44,11 @@ class CategoryService:
     async def update_category(self, category_id: int, category_data: CategoryUpdate) -> Tuple[bool, Optional[str]]:
         """Обновление категории (бизнес-логика)"""
         try:
-            # Бизнес-правило: проверка уникальности slug (если обновляется)
             if category_data.slug:
                 existing_category = await self._category_repository.get_by_slug(category_data.slug)
                 if existing_category and existing_category.id != category_id:
                     return False, "Category with this slug already exists"
 
-            # Обновление категории (делегирование репозиторию)
             category = await self._category_repository.update(category_id, **category_data.model_dump(exclude_unset=True))
             if not category:
                 return False, "Category not found"
@@ -72,8 +68,8 @@ class CategoryService:
             if not category:
                 return False, "Category not found"
 
-            posts = await self._get_posts_by_category(category_id)
-            if posts:
+            has_posts = await self._post_repository.exists_by_category_id(category_id)
+            if has_posts:
                 return False, "Cannot delete category with associated posts"
 
             success = await self._category_repository.delete(category_id)
