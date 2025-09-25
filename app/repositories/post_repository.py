@@ -19,10 +19,17 @@ class PostRepository(PostRepositoryInterface[Post]):
         self._model = Post
 
     async def get_by_id(self, post_id: int) -> Optional[Post]:
-        """Получить пост по ID"""
+        """Получить пост по ID с предзагрузкой отношений"""
         try:
+            from sqlalchemy.orm import selectinload
+
             result = await self._db_session.execute(
-                select(Post).where(Post.id == post_id)
+                select(Post)
+                .options(
+                    selectinload(Post.author),
+                    selectinload(Post.category)
+                )
+                .where(Post.id == post_id)
             )
             return result.scalar_one_or_none()
         except SQLAlchemyError as error:
@@ -30,11 +37,16 @@ class PostRepository(PostRepositoryInterface[Post]):
             return None
 
     async def get_by_slug(self, slug: str) -> Optional[Post]:
-        """Получить пост по slug"""
+        """Получить пост по slug с предзагрузкой отношений"""
         try:
+            from sqlalchemy.orm import selectinload
+
             result = await self._db_session.execute(
                 select(Post)
-                .options(selectinload(Post.category), selectinload(Post.author))
+                .options(
+                    selectinload(Post.author),
+                    selectinload(Post.category)
+                )
                 .where(Post.slug == slug)
             )
             return result.scalar_one_or_none()
@@ -43,10 +55,18 @@ class PostRepository(PostRepositoryInterface[Post]):
             return None
 
     async def get_all(self, skip: int = 0, limit: int = 100) -> List[Post]:
-        """Получить все посты"""
+        """Получить все посты с предзагрузкой отношений"""
         try:
+            from sqlalchemy.orm import selectinload
+
             result = await self._db_session.execute(
-                select(Post).offset(skip).limit(limit)
+                select(Post)
+                .options(
+                    selectinload(Post.author),
+                    selectinload(Post.category)
+                )
+                .offset(skip)
+                .limit(limit)
             )
             return result.scalars().all()
         except SQLAlchemyError as error:
@@ -54,11 +74,16 @@ class PostRepository(PostRepositoryInterface[Post]):
             return []
 
     async def get_published_posts(self, skip: int = 0, limit: int = 100) -> List[Post]:
-        """Получить опубликованные посты"""
+        """Получить опубликованные посты с предзагрузкой отношений"""
         try:
+            from sqlalchemy.orm import selectinload
+
             result = await self._db_session.execute(
                 select(Post)
-                .options(selectinload(Post.category), selectinload(Post.author))
+                .options(
+                    selectinload(Post.author),
+                    selectinload(Post.category)
+                )
                 .where(Post.is_published == True)
                 .where(Post.is_active == True)
                 .offset(skip)
@@ -71,12 +96,17 @@ class PostRepository(PostRepositoryInterface[Post]):
             return []
 
     async def get_posts_by_category(self, category_slug: str, skip: int = 0, limit: int = 100) -> List[Post]:
-        """Получить посты по категории"""
+        """Получить посты по категории с предзагрузкой отношений"""
         try:
+            from sqlalchemy.orm import selectinload
+
             result = await self._db_session.execute(
                 select(Post)
                 .join(Category)
-                .options(selectinload(Post.category), selectinload(Post.author))
+                .options(
+                    selectinload(Post.author),
+                    selectinload(Post.category)
+                )
                 .where(Category.slug == category_slug)
                 .where(Post.is_published == True)
                 .where(Post.is_active == True)
@@ -96,8 +126,8 @@ class PostRepository(PostRepositoryInterface[Post]):
 
             stmt = select(
                 exists().where(
-                    self.model.category_id == category_id,
-                    self.model.is_active == True
+                    self._model.category_id == category_id,
+                    self._model.is_active == True
                 )
             )
             result = await self._db_session.execute(stmt)
