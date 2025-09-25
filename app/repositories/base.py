@@ -44,8 +44,6 @@ class BaseRepository(Generic[ModelType]):
         try:
             instance = self.model(**kwargs)
             self.db_session.add(instance)
-            await self.db_session.commit()
-            await self.db_session.refresh(instance)
             return instance
         except SQLAlchemyError as e:
             await self.db_session.rollback()
@@ -59,8 +57,6 @@ class BaseRepository(Generic[ModelType]):
             if instance:
                 for key, value in kwargs.items():
                     setattr(instance, key, value)
-                await self.db_session.commit()
-                await self.db_session.refresh(instance)
             return instance
         except SQLAlchemyError as e:
             await self.db_session.rollback()
@@ -73,7 +69,6 @@ class BaseRepository(Generic[ModelType]):
             instance = await self.get_by_id(item_id)
             if instance:
                 instance.is_active = False
-                await self.db_session.commit()
                 return True
             return False
         except SQLAlchemyError as e:
