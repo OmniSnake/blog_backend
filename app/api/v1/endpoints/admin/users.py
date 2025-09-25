@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.api.dependencies import require_admin
 from app.schemas.user import UserWithRolesResponse, UserRoleUpdate, UserListResponse
-from app.repositories.user import UserRepository
-from app.repositories.role import RoleRepository
+from app.services.user import UserService
+from typing import List
 
 router = APIRouter()
 
@@ -17,12 +17,12 @@ async def get_users(
         db: AsyncSession = Depends(get_db)
 ):
     """Получение списка пользователей (только для администраторов)"""
-    user_repo = UserRepository(db)
-    users = await user_repo.get_all(skip=skip, limit=limit)
+    user_service = UserService(db)
+    users = await user_service.user_repo.get_all(skip=skip, limit=limit)
 
     users_with_roles = []
     for user in users:
-        roles = await user_repo.get_user_roles(user.id)
+        roles = await user_service.user_repo.get_user_roles(user.id)
         users_with_roles.append(
             UserWithRolesResponse(
                 id=user.id,
@@ -53,29 +53,17 @@ async def update_user_roles(
         db: AsyncSession = Depends(get_db)
 ):
     """Обновление ролей пользователя (только для администраторов)"""
-    user_repo = UserRepository(db)
-    role_repo = RoleRepository(db)
+    user_service = UserService(db)
+    success, error = await user_service.update_user_roles(user_id, roles_data)
 
-    user = await user_repo.get_by_id(user_id)
-    if not user:
+    if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error
         )
 
-    current_roles = await user_repo.get_user_roles(user_id)
-
-    for role_name in current_roles:
-        pass
-
-    for role_name in roles_data.roles:
-        role = await role_repo.get_by_name(role_name)
-        if role:
-            await user_repo.add_role_to_user(user_id, role_name)
-
-    await db.commit()
-
-    updated_roles = await user_repo.get_user_roles(user_id)
+    user = await user_service.user_repo.get_by_id(user_id)
+    updated_roles = await user_service.user_repo.get_user_roles(user_id)
 
     return UserWithRolesResponse(
         id=user.id,
@@ -88,3 +76,20 @@ async def update_user_roles(
         updated_at=user.updated_at,
         roles=updated_roles
     )
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deactivate_user(
+        user_id: int,
+        current_user: dict = Depends(require_admin),
+        db: AsyncSession = Depends(get_db)
+):
+    """Деактивация пользователя (только для администраторов)"""
+    user_service = UserService(db)
+    success, error = await user_service.deactivate_user(user_id)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error
+        )
