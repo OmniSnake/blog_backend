@@ -1,19 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
-from app.services.auth import AuthService
+from app.services.auth_service import AuthService
 from app.schemas.user import UserCreate, LoginRequest, TokenResponse, RefreshTokenRequest
+from app.api.dependencies import get_auth_service
 
 router = APIRouter()
 
-
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
-        user_data: UserCreate,
-        db: AsyncSession = Depends(get_db)
+    user_data: UserCreate,
+    auth_service: AuthService = Depends(get_auth_service)
 ):
     """Регистрация нового пользователя"""
-    auth_service = AuthService(db)
     success, error = await auth_service.register_user(user_data)
 
     if not success:
@@ -24,14 +21,12 @@ async def register(
 
     return {"message": "User registered successfully"}
 
-
 @router.post("/login", response_model=TokenResponse)
 async def login(
-        login_data: LoginRequest,
-        db: AsyncSession = Depends(get_db)
+    login_data: LoginRequest,
+    auth_service: AuthService = Depends(get_auth_service)
 ):
     """Вход пользователя"""
-    auth_service = AuthService(db)
     user_data, error = await auth_service.authenticate_user(login_data)
 
     if error:
@@ -43,14 +38,12 @@ async def login(
     tokens = await auth_service.create_tokens(user_data)
     return tokens
 
-
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_tokens(
-        token_data: RefreshTokenRequest,
-        db: AsyncSession = Depends(get_db)
+    token_data: RefreshTokenRequest,
+    auth_service: AuthService = Depends(get_auth_service)
 ):
     """Обновление токенов"""
-    auth_service = AuthService(db)
     tokens, error = await auth_service.refresh_tokens(token_data.refresh_token)
 
     if error:

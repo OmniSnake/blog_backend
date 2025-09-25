@@ -1,15 +1,27 @@
-from .base import BaseRepository
-from .user import UserRepository
-from .role import RoleRepository
-from .refresh_token import RefreshTokenRepository
-from .category import CategoryRepository
-from .post import PostRepository
+from .base import (
+    BaseRepository,
+    UserRepositoryInterface,
+    RoleRepositoryInterface,
+    CategoryRepositoryInterface,
+    PostRepositoryInterface,
+    RefreshTokenRepositoryInterface
+)
+from .user_repository import UserRepository
+from .role_repository import RoleRepository
+from .category_repository import CategoryRepository
+from .post_repository import PostRepository
+from .refresh_token_repository import RefreshTokenRepository
 
 __all__ = [
     "BaseRepository",
+    "UserRepositoryInterface",
+    "RoleRepositoryInterface",
+    "CategoryRepositoryInterface",
+    "PostRepositoryInterface",
+    "RefreshTokenRepositoryInterface",
     "UserRepository",
     "RoleRepository",
-    "RefreshTokenRepository",
     "CategoryRepository",
-    "PostRepository"
+    "PostRepository",
+    "RefreshTokenRepository"
 ]

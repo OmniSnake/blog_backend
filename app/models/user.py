@@ -18,12 +18,10 @@ class User(BaseModel):
     roles: Mapped[List["Role"]] = relationship(
         "Role",
         secondary="user_roles",
-        back_populates="users"
+        back_populates="users",
+        lazy="selectin"
     )
-    refresh_tokens: Mapped[List["RefreshToken"]] = relationship(
-        "RefreshToken",
-        back_populates="user"
-    )
+    refresh_tokens: Mapped[List["RefreshToken"]] = relationship("RefreshToken",back_populates="user")
 
     def __repr__(self) -> str:
         return f"<User {self.email}>"

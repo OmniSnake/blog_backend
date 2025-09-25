@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
-from app.repositories.post import PostRepository
+from app.repositories.post_repository import PostRepository
 from app.schemas.post import PostResponse, PostListResponse
 
 router = APIRouter()
