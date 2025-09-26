@@ -36,7 +36,6 @@ def upgrade() -> None:
         sa.Column('slug', sa.String(length=200), nullable=False),
         sa.Column('excerpt', sa.Text(), nullable=True),
         sa.Column('content', sa.Text(), nullable=False),
-        sa.Column('content_html', sa.Text(), nullable=False),
         sa.Column('is_published', sa.Boolean(), default=False),
         sa.Column('category_id', sa.Integer(), nullable=False),
         sa.Column('author_id', sa.Integer(), nullable=False),
@@ -49,20 +48,6 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_posts_id'), 'posts', ['id'], unique=False)
     op.create_index(op.f('ix_posts_slug'), 'posts', ['slug'], unique=True)
-
-    categories_table = sa.sql.table('categories',
-        sa.Column('name', sa.String),
-        sa.Column('slug', sa.String),
-        sa.Column('description', sa.Text)
-    )
-
-    op.bulk_insert(categories_table,
-        [
-            {'name': 'Technology', 'slug': 'technology', 'description': 'Articles about technology and programming'},
-            {'name': 'Lifestyle', 'slug': 'lifestyle', 'description': 'Lifestyle and personal development'},
-            {'name': 'Travel', 'slug': 'travel', 'description': 'Travel experiences and guides'},
-        ]
-    )
 
 
 def downgrade() -> None:

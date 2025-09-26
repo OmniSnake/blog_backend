@@ -11,20 +11,20 @@ logger = logging.getLogger(__name__)
 
 
 class PostService:
-    """Сервис для работы с постами (чистая бизнес-логика)"""
+    """Сервис для работы с постами"""
 
     def __init__(
-        self,
-        post_repository: PostRepositoryInterface[Post],
-        category_repository: CategoryRepositoryInterface[Category],
-        db_session: AsyncSession
+            self,
+            post_repository: PostRepositoryInterface[Post],
+            category_repository: CategoryRepositoryInterface[Category],
+            db_session: AsyncSession
     ):
         self._post_repository = post_repository
         self._category_repository = category_repository
         self._db_session = db_session
 
     async def create_post(self, author_id: int, post_data: PostCreate) -> Tuple[bool, Optional[str]]:
-        """Создание поста (бизнес-логика)"""
+        """Создание поста с санитизацией контента"""
         try:
             category = await self._category_repository.get_by_id(post_data.category_id)
             if not category:
@@ -34,7 +34,13 @@ class PostService:
             if existing_post:
                 return False, "Post with this slug already exists"
 
-            post = await self._post_repository.create_with_author(author_id, **post_data.model_dump())
+            sanitized_content = Post.sanitize_html(post_data.content)
+
+            post_dict = post_data.model_dump()
+            post_dict['content'] = sanitized_content
+            post_dict['author_id'] = author_id
+
+            post = await self._post_repository.create(**post_dict)
             if not post:
                 return False, "Failed to create post"
 
@@ -47,19 +53,24 @@ class PostService:
             return False, "Database error"
 
     async def update_post(self, post_id: int, post_data: PostUpdate) -> Tuple[bool, Optional[str]]:
-        """Обновление поста (бизнес-логика)"""
+        """Обновление поста с санитизацией контента"""
         try:
-            if post_data.slug:
-                existing_post = await self._post_repository.get_by_slug(post_data.slug)
+            update_data = post_data.model_dump(exclude_unset=True)
+
+            if 'slug' in update_data:
+                existing_post = await self._post_repository.get_by_slug(update_data['slug'])
                 if existing_post and existing_post.id != post_id:
                     return False, "Post with this slug already exists"
 
-            if post_data.category_id:
-                category = await self._category_repository.get_by_id(post_data.category_id)
+            if 'category_id' in update_data:
+                category = await self._category_repository.get_by_id(update_data['category_id'])
                 if not category:
                     return False, "Category not found"
 
-            post = await self._post_repository.update(post_id, **post_data.model_dump(exclude_unset=True))
+            if 'content' in update_data:
+                update_data['content'] = Post.sanitize_html(update_data['content'])
+
+            post = await self._post_repository.update(post_id, **update_data)
             if not post:
                 return False, "Post not found"
 
@@ -72,15 +83,11 @@ class PostService:
             return False, "Database error"
 
     async def delete_post(self, post_id: int) -> Tuple[bool, Optional[str]]:
-        """Удаление поста (бизнес-логика)"""
+        """Удаление поста"""
         try:
-            post = await self._post_repository.get_by_id(post_id)
-            if not post:
-                return False, "Post not found"
-
             success = await self._post_repository.delete(post_id)
             if not success:
-                return False, "Failed to delete post"
+                return False, "Post not found"
 
             await self._db_session.commit()
             return True, None

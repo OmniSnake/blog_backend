@@ -13,7 +13,6 @@ class Post(BaseModel):
     slug: Mapped[str] = mapped_column(String(200), unique=True, index=True)
     excerpt: Mapped[str] = mapped_column(Text, nullable=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    content_html: Mapped[str] = mapped_column(Text, nullable=False)
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
 
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))

@@ -29,6 +29,15 @@ class PostBase(BaseModel):
             raise ValueError('Title must not exceed 200 characters')
         return v
 
+    @field_validator('content')
+    def validate_content(cls, v):
+        """Базовая валидация контента"""
+        if len(v) < 10:
+            raise ValueError('Content must be at least 10 characters long')
+        if len(v) > 50000:
+            raise ValueError('Content must not exceed 50000 characters')
+        return v
+
 
 class PostCreate(PostBase):
     """Схема для создания поста"""
@@ -63,7 +72,6 @@ class PostUpdate(BaseModel):
 class PostResponse(PostBase):
     """Схема ответа поста"""
     id: int
-    content_html: str
     author: UserResponse
     category: CategoryResponse
     created_at: datetime
