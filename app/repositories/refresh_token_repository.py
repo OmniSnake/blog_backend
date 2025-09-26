@@ -1,5 +1,5 @@
 from typing import Optional, List
-from datetime import UTC
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
@@ -88,9 +88,9 @@ class RefreshTokenRepository(RefreshTokenRepositoryInterface[RefreshToken]):
     async def delete_expired_tokens(self) -> int:
         """Удалить просроченные токены"""
         try:
-            from datetime import datetime
+            current_time = datetime.now(timezone.utc)
             result = await self._db_session.execute(
-                select(RefreshToken).where(RefreshToken.expires_at < datetime.now(UTC))
+                select(RefreshToken).where(RefreshToken.expires_at < current_time)
             )
             expired_tokens = result.scalars().all()
 

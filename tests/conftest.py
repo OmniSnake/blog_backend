@@ -1,8 +1,8 @@
 import asyncio
 import pytest
-import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool
+from fastapi.testclient import TestClient
 
 from app.core.database import db_manager, get_db
 from app.main import app
@@ -54,8 +54,8 @@ async def session(engine):
         await connection.rollback()
 
 
-@pytest_asyncio.fixture
-async def client(session):
+@pytest.fixture
+def client(session):
     """Create test client with overridden database dependency."""
 
     async def override_get_db():
@@ -63,14 +63,13 @@ async def client(session):
 
     app.dependency_overrides[get_db] = override_get_db
 
-    from httpx import AsyncClient
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    with TestClient(app) as client:
         yield client
 
     app.dependency_overrides.clear()
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def test_user(session):
     """Create a test user."""
     from app.models.user import User
@@ -90,7 +89,7 @@ async def test_user(session):
     return user
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def test_admin_user(session):
     """Create a test admin user."""
     from app.models.user import User
@@ -123,7 +122,7 @@ async def test_admin_user(session):
     return user
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def test_category(session):
     """Create a test category."""
     from app.repositories.category_repository import CategoryRepository
@@ -140,27 +139,27 @@ async def test_category(session):
     return category
 
 
-@pytest_asyncio.fixture
-async def auth_headers(client, test_user):
+@pytest.fixture
+def auth_headers(client, test_user):
     """Get authentication headers for test user."""
     login_data = {
         "email": "test@example.com",
         "password": "testpassword123"
     }
 
-    response = await client.post("/api/v1/auth/login", json=login_data)
+    response = client.post("/api/v1/auth/login", json=login_data)
     tokens = response.json()
     return {"Authorization": f"Bearer {tokens['access_token']}"}
 
 
-@pytest_asyncio.fixture
-async def admin_headers(client, test_admin_user):
+@pytest.fixture
+def admin_headers(client, test_admin_user):
     """Get authentication headers for admin user."""
     login_data = {
         "email": "admin@example.com",
         "password": "adminpassword123"
     }
 
-    response = await client.post("/api/v1/auth/login", json=login_data)
+    response = client.post("/api/v1/auth/login", json=login_data)
     tokens = response.json()
     return {"Authorization": f"Bearer {tokens['access_token']}"}

@@ -12,7 +12,7 @@ class Post(BaseModel):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     slug: Mapped[str] = mapped_column(String(200), unique=True, index=True)
     excerpt: Mapped[str] = mapped_column(Text, nullable=True)
-    content: Mapped[str] = mapped_column(Text, nullable=False)  # Теперь здесь безопасный контент
+    content: Mapped[str] = mapped_column(Text, nullable=False)
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
 
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
