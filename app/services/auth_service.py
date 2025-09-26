@@ -1,5 +1,5 @@
 from typing import Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 import logging
@@ -101,7 +101,7 @@ class AuthService:
             access_token = SecurityService.create_access_token(user_data)
             refresh_token = SecurityService.create_refresh_token(user_data)
 
-            expires_at = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+            expires_at = datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
             token_created = await self._refresh_token_repository.create(
                 token=refresh_token,
@@ -126,7 +126,7 @@ class AuthService:
         """Обновление токенов (бизнес-логика)"""
         try:
             token_record = await self._refresh_token_repository.get_by_token(refresh_token)
-            if not token_record or token_record.expires_at < datetime.utcnow():
+            if not token_record or token_record.expires_at < datetime.now(UTC):
                 return None, "Invalid or expired refresh token"
 
             payload = SecurityService.verify_token(refresh_token)
