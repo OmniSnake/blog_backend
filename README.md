@@ -29,18 +29,18 @@
 
 ## 📁 Структура проекта
 blog-backend/
-├── app/ # Основное приложение
-│ ├── api/ # API endpoints
-│ │ └── v1/ # Версия API v1
-│ ├── core/ # Конфигурация и база данных
-│ ├── models/ # SQLAlchemy модели
-│ ├── repositories/ # Паттерн Repository (работа с данными)
-│ ├── schemas/ # Pydantic схемы
-│ └── services/ # Бизнес-логика
-├── alembic/ # Миграции базы данных
-├── tests/ # Тесты
-├── scripts/ # Вспомогательные скрипты
-└── docker-compose.yml # Docker конфигурация
+app/ # Основное приложение
+app/api/ # API endpoints
+app/api/v1/ # Версия API v1
+app/core/ # Конфигурация и база данных
+app/models/ # SQLAlchemy модели
+app/repositories/ # Паттерн Repository (работа с данными)
+app/schemas/ # Pydantic схемы
+app/services/ # Бизнес-логика
+alembic/ # Миграции базы данных
+tests/ # Тесты
+scripts/ # Вспомогательные скрипты
+docker-compose.yml # Docker конфигурация
 
 
 ## 🚀 Быстрый старт
