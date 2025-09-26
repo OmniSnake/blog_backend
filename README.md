@@ -168,7 +168,7 @@ curl -X POST "http://localhost:8000/api/v1/auth/login" \
 - PUT	    /api/v1/admin/categories/{id}	Обновление категории
 - DELETE	/api/v1/admin/categories/{id}	Удаление категории
 
-🧪 Тестирование
+🧪 Тестирование 
 ```bash
 # Запуск всех тестов
 pytest
