@@ -23,5 +23,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  seed-db:
+    build: .
+    command: python scripts/seed_database.py
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/blog_db
+
 volumes:
   postgres_data:

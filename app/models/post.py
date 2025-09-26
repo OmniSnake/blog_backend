@@ -12,23 +12,17 @@ class Post(BaseModel):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     slug: Mapped[str] = mapped_column(String(200), unique=True, index=True)
     excerpt: Mapped[str] = mapped_column(Text, nullable=True)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)  # Теперь здесь безопасный контент
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
 
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
-    category: Mapped["Category"] = relationship("Category", back_populates="posts")
-    author: Mapped["User"] = relationship("User")
+    category: Mapped["Category"] = relationship("Category", back_populates="posts", lazy="selectin")
+    author: Mapped["User"] = relationship("User", lazy="selectin")
 
     def __repr__(self) -> str:
         return f"<Post {self.title}>"
-
-    def __init__(self, **kwargs):
-        """Инициализация с автоматической санитизацией HTML"""
-        if 'content' in kwargs:
-            kwargs['content_html'] = self.sanitize_html(kwargs['content'])
-        super().__init__(**kwargs)
 
     @staticmethod
     def sanitize_html(content: str) -> str:

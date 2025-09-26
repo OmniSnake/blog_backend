@@ -75,14 +75,14 @@ def upgrade() -> None:
     op.bulk_insert(roles_table,
         [
             {
+                'name': 'admin',
+                'description': 'Administrator',
+                'permissions': '["post:create", "post:read", "post:update", "post:delete", "category:create", "category:read", "category:update", "category:delete", "user:read", "user:update", "user:delete", "admin:read", "admin:update", "admin:delete"]'
+            },
+            {
                 'name': 'user',
                 'description': 'Regular user',
                 'permissions': '["post:read", "category:read"]'
-            },
-            {
-                'name': 'admin',
-                'description': 'Administrator',
-                'permissions': '["post:create", "post:read", "post:update", "post:delete", "category:create", "category:read", "category:update", "category:delete", "user:read", "user:update", "user:delete", "admin:read", "admin:update"]'
             }
         ]
     )

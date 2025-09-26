@@ -45,6 +45,7 @@ class RolePermissions:
 
     ADMIN_READ = "admin:read"
     ADMIN_UPDATE = "admin:update"
+    ADMIN_DELETE = "admin:delete"
 
     @classmethod
     def get_role_permissions(cls, role_name: str) -> List[str]:
