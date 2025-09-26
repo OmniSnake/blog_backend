@@ -32,8 +32,8 @@ class PostBase(BaseModel):
     @field_validator('content')
     def validate_content(cls, v):
         """Базовая валидация контента"""
-        if len(v) < 10:
-            raise ValueError('Content must be at least 10 characters long')
+        if len(v) < 5:
+            raise ValueError('Content must be at least 5 characters long')
         if len(v) > 50000:
             raise ValueError('Content must not exceed 50000 characters')
         return v
