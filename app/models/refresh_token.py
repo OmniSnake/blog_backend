@@ -10,7 +10,7 @@ class RefreshToken(BaseModel):
     __tablename__ = "refresh_tokens"
 
     token: Mapped[str] = mapped_column(String(512), unique=True, index=True)
-    expires_at: Mapped[datetime] = mapped_column(DateTime)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     user: Mapped["User"] = relationship("User", back_populates="refresh_tokens")

@@ -36,6 +36,13 @@ async def login(
         )
 
     tokens = await auth_service.create_tokens(user_data)
+
+    if not tokens:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create tokens"
+        )
+
     return tokens
 
 @router.post("/refresh", response_model=TokenResponse)

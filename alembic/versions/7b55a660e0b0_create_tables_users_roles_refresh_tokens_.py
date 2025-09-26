@@ -55,7 +55,7 @@ def upgrade() -> None:
     op.create_table('refresh_tokens',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('token', sa.String(length=512), nullable=False),
-        sa.Column('expires_at', sa.DateTime(), nullable=False),
+        sa.Column('expires_at', sa.DateTime(timezone=True), nullable=False),
         sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=func.now(), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), onupdate=func.now(), nullable=True),
