@@ -151,7 +151,7 @@ curl -X POST "http://localhost:8000/api/v1/auth/login" \
 #### Защищенные endpoints (требуют аутентификации)
 
 - **Метод**	    **Endpoint**	        **Описание**	                        **Роли**
-- **GET**	    **/api/v1/users/me**	**Информация о текущем пользователе**	**User+**
+- **GET**	    /api/v1/users/me	**Информация о текущем пользователе**	**User+**
 
 #### Админские endpoints (требуют роль Admin)
 
