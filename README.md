@@ -60,6 +60,7 @@ docker-compose exec web alembic upgrade head
 
 # Заполнение тестовыми данными
 docker-compose exec web python scripts/seed_database.py
+└──Пользователи login:password - admin@example.com:1234567q, user@example.com:1234567q
 
 Приложение будет доступно по адресу: http://localhost:8000
 ```
@@ -91,6 +92,7 @@ alembic upgrade head
 
 # Заполнение тестовыми данными
 python scripts/seed_database.py
+└──Пользователи login:password - admin@example.com:1234567q, user@example.com:1234567q
 
 # Запуск приложения
 python run.py
